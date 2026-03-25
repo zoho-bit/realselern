@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ARYAN RAJ - Premium ID Store</title>
+  <meta name="description" content="Premium verified IDs - Instant delivery after payment">
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
+    body {
+      background: linear-gradient(180deg, #5b4bdb, #7b6cf6);
+      color: #333;
+      padding: 15px;
+      min-height: 100vh;
+    }
+    .container { max-width: 420px; margin: 0 auto; }
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+    }
+    .header {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #6b5cff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .header small { font-size: 0.9rem; color: #777; font-weight: 400; }
+    .badge {
+      background: #ffecec;
+      color: #e63946;
+      padding: 5px 14px;
+      border-radius: 30px;
+      font-weight: bold;
+      font-size: 0.85rem;
+      margin: 12px auto;
+      width: fit-content;
+      display: block;
+    }
+    .stock { text-align: center; font-size: 1.9rem; font-weight: 900; color: #6b5cff; margin: 15px 0; }
+    .note {
+      background: #f0f2ff;
+      border-radius: 16px;
+      padding: 14px;
+      font-size: 0.95rem;
+      color: #444;
+      margin: 12px 0;
+      line-height: 1.5;
+    }
+    .options { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 15px 0; }
+    .box {
+      background: #f8f9ff;
+      border: 2px solid transparent;
+      border-radius: 16px;
+      padding: 16px;
+      text-align: center;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .box.active { border-color: #6b5cff; background: #eef0ff; color: #6b5cff; }
+    .box span { display: block; font-size: 0.9rem; color: #666; margin-top: 6px; }
+    input[type="number"], .custom {
+      width: 100%;
+      padding: 14px;
+      margin: 12px 0;
+      border: 1.5px solid #ddd;
+      border-radius: 12px;
+      font-size: 1rem;
+    }
+    .buy {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 50px;
+      background: linear-gradient(90deg, #ff4d4d, #ff2f7b);
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 900;
+      cursor: pointer;
+      transition: transform 0.2s;
+      margin-bottom: 12px;
+    }
+    .buy:hover { transform: scale(1.03); }
+    .buy:disabled { background: #ccc; cursor: not-allowed; }
+
+    /* New Normal IDs Button */
+    .normal-btn {
+      width: 100%;
+      padding: 16px;
+      border: 2px solid #6b5cff;
+      border-radius: 50px;
+      background: white;
+      color: #6b5cff;
+      font-size: 1.1rem;
+      font-weight: 900;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .normal-btn:hover {
+      background: #6b5cff;
+      color: white;
+      transform: scale(1.03);
+    }
+
+    .icons { display: flex; justify-content: space-around; margin-top: 20px; font-size: 0.9rem; color: #555; }
+    .icon { text-align: center; cursor: pointer; }
+    .icon div {
+      width: 48px; height: 48px;
+      background: #eef0ff;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 8px;
+      font-size: 1.5rem; color: #6b5cff;
+    }
+    .list { background: #6b5cff; color: white; border-radius: 18px; padding: 18px; margin-bottom: 20px; }
+    .list p { margin: 8px 0; font-size: 0.95rem; }
+    .processing { text-align: center; padding: 40px 0; }
+    .spinner {
+      width: 50px; height: 50px;
+      border: 5px solid #e5e7eb;
+      border-top: 5px solid #6b5cff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 15px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    pre {
+      background: #f8fafc;
+      padding: 16px;
+      border-radius: 12px;
+      white-space: pre-wrap;
+      font-size: 0.95rem;
+      overflow-x: auto;
+    }
+    .copy {
+      background: #22c55e;
+      color: white;
+      border: none;
+      padding: 14px;
+      width: 100%;
+      border-radius: 50px;
+      font-weight: 900;
+      margin-top: 15px;
+      cursor: pointer;
+    }
+    #custom-alert {
+      position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%, -50%) scale(0.8);
+      background: linear-gradient(135deg, #ff4d4d, #ff2f7b);
+      color: white;
+      font-weight: bold;
+      padding: 18px 30px;
+      border-radius: 20px;
+      font-size: 1.1rem;
+      text-align: center;
+      z-index: 9999;
+      opacity: 0;
+      box-shadow: 0 10px 35px rgba(0,0,0,0.3);
+      transition: all 0.4s ease;
+    }
+    #custom-alert.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    .footer { text-align: center; color: white; margin-top: 30px; font-size: 0.95rem; }
+    .footer h3 { margin: 0; font-size: 1.4rem; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="card" id="select">
+    <div class="header">🛍️ ARYAN RAJ <small>PREMIUM ID STORE</small></div>
+    <div class="badge">⚡ Limited Stock!</div>
+    <div class="stock">Available IDs: <span id="stock">Loading...</span></div>
+    <div class="note">
+      Fresh verified accounts<br>
+      Automatic delivery after payment<br>
+      Fast & secure process
+    </div>
+
+    <h4 style="margin: 20px 0 12px; text-align:center;">Select Quantity</h4>
+    <div class="options">
+      <div class="box" onclick="pick(1, this)">1 ID <span id="p1"></span></div>
+      <div class="box" onclick="pick(2, this)">2 IDs <span id="p2"></span></div>
+      <div class="box" onclick="pick(5, this)">5 IDs <span id="p5"></span></div>
+      <div class="box" onclick="pick(10, this)">10 IDs <span id="p10"></span></div>
+    </div>
+
+    <input type="number" class="custom" placeholder="Custom quantity" min="1" oninput="customQty(this.value)">
+    
+    <!-- Premium Buy Button -->
+    <button class="buy" id="buy" disabled>Buy Now (Premium)</button>
+    
+    <!-- VERIFY IDs Button -->
+    <button class="normal-btn" onclick="openNormalIDs()">Verify IDs</button>
+
+    <div class="icons">
+      <div class="icon"><div>🔒</div>Secure</div>
+      <div class="icon"><div>⚡</div>Instant</div>
+      <div class="icon" onclick="openWhatsApp()">
+        <div><img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" style="width:26px;height:26px;"></div>
+        Support
+      </div>
+    </div>
+  </div>
+
+  <div class="card list">
+    <p>✔ Do not change password immediately</p>
+    <p>✔ Do not sync on multiple devices</p>
+    <p>✔ Avoid same IP for many IDs</p>
+    <p>✔ If pending > 30 min → contact support</p>
+  </div>
+
+  <div class="card" id="payment" style="display:none">
+    <h3 style="text-align:center; color:#6b5cff;">Scan & Pay</h3>
+    <p style="text-align:center; margin:10px 0;">
+      Quantity: <b id="pq"></b><br>
+      Total: ₹<b id="pa"></b>
+    </p>
+    <img id="qr" width="220" style="display:block; margin:20px auto; border-radius:12px;" alt="UPI QR">
+    <input type="text" id="utr" class="custom" placeholder="Enter 12-digit UTR" maxlength="12">
+    <button class="buy" onclick="submit()">Submit Payment</button>
+  </div>
+
+  <div class="card processing" id="processing" style="display:none">
+    <div class="spinner"></div>
+    <p>Verifying Payment...<br>Please wait</p>
+  </div>
+
+  <div class="card" id="success" style="display:none">
+    <h3 style="color:#22c55e; text-align:center;">✅ IDs Delivered Successfully</h3>
+    <pre id="ids"></pre>
+    <button class="copy" onclick="copy()">Copy All IDs</button>
+  </div>
+
+  <div id="custom-alert"></div>
+
+  <div class="footer">
+    <h3>ARYAN RAJ</h3>
+    <p>Premium ID Provider • Trusted Service</p>
+    <p>© 2026 All Rights Reserved</p>
+  </div>
+
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+  import { getDatabase, ref, onValue, push, update, get, query, limitToFirst, remove } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCD8BKoJ4NppGDCRfccDW7nfQUp0qopwEA",
+    databaseURL: "https://realseler-d8298-default-rtdb.firebaseio.com",
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  const stockEl = document.getElementById('stock');
+  const buyBtn = document.getElementById('buy');
+  const selectDiv = document.getElementById('select');
+  const paymentDiv = document.getElementById('payment');
+  const processingDiv = document.getElementById('processing');
+  const successDiv = document.getElementById('success');
+  const pqEl = document.getElementById('pq');
+  const paEl = document.getElementById('pa');
+  const qrEl = document.getElementById('qr');
+  const utrEl = document.getElementById('utr');
+  const idsEl = document.getElementById('ids');
+
+  // ================== UPI HIDDEN (Cloudflare Worker) ==================
+  let upi = ""; 
+  const CLOUDFLARE_WORKER_URL = "https://payqr.sawanenter7209.workers.dev/";
+  const whatsappNumber = "84947229295";
+
+  let qty = 0;
+  let price = 0;
+  let orderId = "";
+  let stockCount = 0;
+  let shopOpen = true;
+
+  function showAlert(msg) {
+    const alertBox = document.getElementById('custom-alert');
+    alertBox.textContent = msg;
+    alertBox.classList.add('show');
+    setTimeout(() => alertBox.classList.remove('show'), 3000);
+  }
+
+  function isClosed() {
+    const hour = new Date().getHours();
+    return hour >= 0 && hour < 6;
+  }
+
+  // Fetch UPI from Cloudflare Worker
+  async function loadUPI() {
+    try {
+      const response = await fetch(CLOUDFLARE_WORKER_URL);
+      if (response.ok) {
+        const data = await response.json();
+        upi = data.upi || "";
+      } else {
+        upi = ""; // fallback
+      }
+    } catch (e) {
+      console.log("");
+      upi = "";
+    }
+  }
+
+  onValue(ref(db, "settings/shopOpen"), snap => {
+    shopOpen = snap.exists() ? snap.val() : true;
+  });
+
+  onValue(ref(db, "stock"), snap => {
+    let count = 0;
+    snap.forEach(child => {
+      if (!child.val().sold) count++;
+    });
+    stockCount = count;
+    stockEl.textContent = count;
+    buyBtn.disabled = count === 0;
+  });
+
+  onValue(ref(db, "settings/pricePerId"), snap => {
+    price = snap.val() || 50;
+    document.getElementById('p1').textContent = "₹" + price;
+    document.getElementById('p2').textContent = "₹" + (price * 2);
+    document.getElementById('p5').textContent = "₹" + (price * 5);
+    document.getElementById('p10').textContent = "₹" + (price * 10);
+  });
+
+  window.pick = (q, el) => {
+    if (!shopOpen || isClosed()) return showAlert("⏰ Shop is closed now");
+    if (stockCount === 0) return showAlert("❌ No stock left");
+    if (q > stockCount) return showAlert("Not enough stock");
+
+    qty = q;
+    document.querySelectorAll('.box').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    buyBtn.textContent = `Buy Now (Premium) ₹${qty * price}`;
+    buyBtn.disabled = false;
+  };
+
+  window.customQty = (val) => {
+    qty = Number(val) || 0;
+    if (qty > 0) {
+      buyBtn.textContent = `Buy Now (Premium) ₹${qty * price}`;
+      buyBtn.disabled = false;
+    } else {
+      buyBtn.disabled = true;
+    }
+  };
+
+  buyBtn.onclick = async () => {
+    if (qty <= 0) return showAlert("Select quantity first");
+    if (qty > stockCount) return showAlert("Not enough stock");
+
+    if (!upi) await loadUPI();   // UPI load karo
+
+    orderId = push(ref(db, "orders")).key;
+
+    push(ref(db, "orders"), {
+      qty,
+      amount: qty * price,
+      status: "created",
+      time: Date.now(),
+      orderId
+    });
+
+    selectDiv.style.display = "none";
+    paymentDiv.style.display = "block";
+
+    pqEl.textContent = qty;
+    paEl.textContent = qty * price;
+
+    const upiLink = `upi://pay?pa=${upi}&pn=ARYAN%20RAJ%20STORE&am=${qty * price}&cu=INR`;
+    qrEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiLink)}`;
+  };
+
+  // ================== NEW FUNCTION FOR NORMAL IDs BUTTON ==================
+  window.openNormalIDs = () => {
+    // Yahan apna Normal IDs ka link daal do
+    // Example: window.location.href = "https://your-normal-ids-link.com";
+    
+    window.location.href = "https://zoho-bit.github.io/realseler/";   // ←←← YAHAN APNA LINK CHANGE KAR DO
+  };
+
+  window.submit = () => {
+    const utrVal = utrEl.value.trim();
+    if (!utrVal) return showAlert("Enter UTR number");
+    if (!/^\d{12}$/.test(utrVal)) return showAlert("Invalid UTR - exactly 12 digits");
+
+    update(ref(db, "orders/" + orderId), {
+      utr: utrVal,
+      status: "pending"
+    });
+
+    paymentDiv.style.display = "none";
+    processingDiv.style.display = "block";
+
+    onValue(ref(db, "orders/" + orderId + "/status"), snap => {
+      if (snap.val() === "verified") {
+        deliverAndRemoveFromStock();
+      }
+    });
+
+    onValue(ref(db, "rejected/" + orderId), snap => {
+      if (snap.exists()) {
+        processingDiv.style.display = "none";
+        selectDiv.style.display = "block";
+        showAlert("❌ Payment not matched / rejected");
+        remove(ref(db, "rejected/" + orderId));
+      }
+    });
+  };
+
+  async function deliverAndRemoveFromStock() {
+    try {
+      const stockRef = ref(db, "stock");
+      const snapshot = await get(query(stockRef, limitToFirst(qty + 10)));
+
+      let available = [];
+      snapshot.forEach(child => {
+        const val = child.val();
+        if (!val.sold) available.push({ key: child.key, data: val });
+      });
+
+      if (available.length < qty) {
+        idsEl.textContent = "Error: Not enough valid stock at delivery time";
+        processingDiv.style.display = "none";
+        successDiv.style.display = "block";
+        return;
+      }
+
+      let deliveredText = "";
+      const keysToRemove = [];
+
+      for (let i = 0; i < qty; i++) {
+        const item = available[i];
+        const d = item.data;
+        deliveredText += `${d.username || 'N/A'}\n${d.password || 'N/A'}\n${d.phone || 'N/A'}\n${d.email || 'N/A'}\n\n`;
+        keysToRemove.push(item.key);
+      }
+
+      const removePromises = keysToRemove.map(key => remove(ref(db, `stock/${key}`)));
+      await Promise.all(removePromises);
+
+      idsEl.textContent = deliveredText.trim() || "Delivered - contact support if empty";
+      processingDiv.style.display = "none";
+      successDiv.style.display = "block";
+
+      showAlert("Stock updated - " + qty + " IDs removed");
+    } catch (err) {
+      console.error("Delivery error:", err);
+      showAlert("Delivery failed - contact support");
+      processingDiv.style.display = "none";
+      selectDiv.style.display = "block";
+    }
+  }
+
+  window.copy = () => {
+    navigator.clipboard.writeText(idsEl.textContent)
+      .then(() => showAlert("✅ Copied!"))
+      .catch(() => showAlert("Copy failed"));
+  };
+
+  window.openWhatsApp = () => {
+    window.open(`https://wa.me/${whatsappNumber}?text=Hello REALSELER Support! Need help.`, "_blank");
+  };
+
+  // Page load on UPI fetch
+  window.onload = () => {
+    loadUPI();
+  };
+</script>
+
+</body>
+</html>
