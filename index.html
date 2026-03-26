@@ -331,7 +331,7 @@
   }
 
   window.pick = (q, el) => {
-    if (!shopOpen || isClosed()) return showAlert("⏰ Shop is closed now");
+    //if (!shopOpen || isClosed()) return showAlert("⏰ Shop is closed now");
     if (stockCount === 0) return showAlert("❌ No stock left");
     if (q > stockCount) return showAlert("Not enough stock");
 
@@ -459,7 +459,7 @@
   };
 
   window.openNormalIDs = () => {
-     window.location.href = "https://realsrt.sawanenter7209.workers.dev/";
+     window.location.href = "https://realsrta.sawanenter7209.workers.dev/";
     };
 
   // 🔥 INIT FIREBASE FROM WORKER
