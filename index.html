@@ -89,7 +89,6 @@
     .buy:hover { transform: scale(1.03); }
     .buy:disabled { background: #ccc; cursor: not-allowed; }
 
-    /* New Normal IDs Button */
     .normal-btn {
       width: 100%;
       padding: 16px;
@@ -176,7 +175,7 @@
   <div class="card" id="select">
     <div class="header">🛍️ REALSELER <small>PREMIUM ID STORE</small></div>
     <div class="badge">⚡ Limited Stock!</div>
-    <div class="stock">Normal IDs: <span id="stock">Loading...</span></div>
+    <div class="stock">Verify IDs: <span id="stock">Loading...</span></div>
     <div class="note">
       Fresh verified accounts<br>
       Automatic delivery after payment<br>
@@ -193,10 +192,7 @@
 
     <input type="number" class="custom" placeholder="Custom quantity" min="1" oninput="customQty(this.value)">
     
-    <!-- Premium Buy Button -->
     <button class="buy" id="buy" disabled>Buy Now (Premium)</button>
-    
-    <!-- VERIFY IDs Button -->
     <button class="normal-btn" onclick="openNormalIDs()">Verify IDs</button>
 
     <div class="icons">
@@ -222,7 +218,10 @@
       Quantity: <b id="pq"></b><br>
       Total: ₹<b id="pa"></b>
     </p>
-    <img id="qr" width="220" style="display:block; margin:20px auto; border-radius:12px;" alt="UPI QR">
+    
+   
+    <img id="qr" width="220" style="display:block; margin:20px auto; border-radius:12px;" alt="Fixed UPI QR Code">
+    
     <input type="text" id="utr" class="custom" placeholder="Enter 12-digit UTR" maxlength="12">
     <button class="buy" onclick="submit()">Submit Payment</button>
   </div>
@@ -252,13 +251,25 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
   import { getDatabase, ref, onValue, push, update, get, query, limitToFirst, remove } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyCD8BKoJ4NppGDCRfccDW7nfQUp0qopwEA",
-    databaseURL: "https://realseler-d8298-default-rtdb.firebaseio.com",
-  };
+ 
+  const CONFIG_URL = "https://dad.sawanenter7209.workers.dev/config";
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+  let db;
+
+  async function initFirebase() {
+    try {
+      const res = await fetch(CONFIG_URL);
+      const firebaseConfig = await res.json();
+
+      const app = initializeApp(firebaseConfig);
+      db = getDatabase(app);
+
+      startApp(); // 👉 init ke baad app start hoga
+    } catch (err) {
+      console.error("Firebase load error:", err);
+      alert("Server connection failed ❌");
+    }
+  }
 
   const stockEl = document.getElementById('stock');
   const buyBtn = document.getElementById('buy');
@@ -272,9 +283,7 @@
   const utrEl = document.getElementById('utr');
   const idsEl = document.getElementById('ids');
 
-  // ================== UPI HIDDEN (Cloudflare Worker) ==================
-  let upi = ""; 
-  const CLOUDFLARE_WORKER_URL = "https://payqr.sawanenter7209.workers.dev/";
+  const CLOUDFLARE_WORKER_URL = "https://haa.sawanenter7209.workers.dev/";
   const whatsappNumber = "84947229295";
 
   let qty = 0;
@@ -295,43 +304,31 @@
     return hour >= 0 && hour < 6;
   }
 
-  // Fetch UPI from Cloudflare Worker
-  async function loadUPI() {
-    try {
-      const response = await fetch(CLOUDFLARE_WORKER_URL);
-      if (response.ok) {
-        const data = await response.json();
-        upi = data.upi || "";
-      } else {
-        upi = ""; // fallback
-      }
-    } catch (e) {
-      console.log("");
-      upi = "";
-    }
-  }
+  function startApp() {
 
-  onValue(ref(db, "settings/shopOpen"), snap => {
-    shopOpen = snap.exists() ? snap.val() : true;
-  });
-
-  onValue(ref(db, "stock"), snap => {
-    let count = 0;
-    snap.forEach(child => {
-      if (!child.val().sold) count++;
+    onValue(ref(db, "settings/shopOpen"), snap => {
+      shopOpen = snap.exists() ? snap.val() : true;
     });
-    stockCount = count;
-    stockEl.textContent = count;
-    buyBtn.disabled = count === 0;
-  });
 
-  onValue(ref(db, "settings/pricePerId"), snap => {
-    price = snap.val() || 50;
-    document.getElementById('p1').textContent = "₹" + price;
-    document.getElementById('p2').textContent = "₹" + (price * 2);
-    document.getElementById('p5').textContent = "₹" + (price * 5);
-    document.getElementById('p10').textContent = "₹" + (price * 10);
-  });
+    onValue(ref(db, "stock"), snap => {
+      let count = 0;
+      snap.forEach(child => {
+        if (!child.val().sold) count++;
+      });
+      stockCount = count;
+      stockEl.textContent = count;
+      buyBtn.disabled = count === 0;
+    });
+
+    onValue(ref(db, "settings/pricePerId"), snap => {
+      price = snap.val() || 50;
+      document.getElementById('p1').textContent = "₹" + price;
+      document.getElementById('p2').textContent = "₹" + (price * 2);
+      document.getElementById('p5').textContent = "₹" + (price * 5);
+      document.getElementById('p10').textContent = "₹" + (price * 10);
+    });
+
+  }
 
   window.pick = (q, el) => {
     if (!shopOpen || isClosed()) return showAlert("⏰ Shop is closed now");
@@ -359,8 +356,6 @@
     if (qty <= 0) return showAlert("Select quantity first");
     if (qty > stockCount) return showAlert("Not enough stock");
 
-    if (!upi) await loadUPI();   // UPI load karo
-
     orderId = push(ref(db, "orders")).key;
 
     push(ref(db, "orders"), {
@@ -377,16 +372,7 @@
     pqEl.textContent = qty;
     paEl.textContent = qty * price;
 
-    const upiLink = `upi://pay?pa=${upi}&pn=ARYAN%20RAJ%20STORE&am=${qty * price}&cu=INR`;
-    qrEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiLink)}`;
-  };
-
-  // ================== NEW FUNCTION FOR NORMAL IDs BUTTON ==================
-  window.openNormalIDs = () => {
-    // Yahan apna Normal IDs ka link daal do
-    // Example: window.location.href = "https://your-normal-ids-link.com";
-    
-    window.location.href = "https://zoho-bit.github.io/realseler/";   // ←←← YAHAN APNA LINK CHANGE KAR DO
+    qrEl.src = `${CLOUDFLARE_WORKER_URL}qr?${Date.now()}`;
   };
 
   window.submit = () => {
@@ -472,9 +458,13 @@
     window.open(`https://wa.me/${whatsappNumber}?text=Hello REALSELER Support! Need help.`, "_blank");
   };
 
-  // Page load on UPI fetch
+  window.openNormalIDs = () => {
+     window.location.href = "https://realselrer.sawanenter7209.workers.dev/";
+    };
+
+  // 🔥 INIT FIREBASE FROM WORKER
   window.onload = () => {
-    loadUPI();
+    initFirebase();
   };
 </script>
 
